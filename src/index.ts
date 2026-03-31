@@ -1,23 +1,30 @@
 /**
- * Kaze - API Rate Limiting and Abuse Detection Service
+ * Kaze - Distributed Rate Limiter
  *
- * a high-performance rate limiting and abuse detection service.
- * provides configurable rate limiting strategies, real-time abuse detection, and comprehensive monitoring.
+ * A high-performance distributed rate limiting service.
+ * Inspired by: "Design a Distributed Rate Limiter w/ Ex-Meta Staff Engineer"
+ * by Hello Interview - SWE Interview Preparation
  */
 
 import { serve } from "bun";
+import packageJson from "../package.json";
+
+const PORT = Number(process.env.PORT) || 3000;
 
 const server = serve({
-  port: process.env.PORT || 3000,
+  port: PORT,
   fetch(req) {
     const url = new URL(req.url);
+
+    // TODO: Rate limiting middleware will be applied in phase 1
 
     // Health check endpoint
     if (url.pathname === "/health") {
       return new Response(
         JSON.stringify({
-          status: "ok",
+          status: "healthy",
           service: "kaze",
+          version: packageJson.version || "0.1.0",
           timestamp: new Date().toISOString(),
         }),
         {
@@ -27,23 +34,34 @@ const server = serve({
       );
     }
 
-    // API endpoints will be added here
+    // Root endpoint - service information
+    if (url.pathname === "/") {
+      return new Response(
+        JSON.stringify({
+          message: "Kaze - Distributed Rate Limiter",
+          version: packageJson.version || "0.1.0",
+          documentation: "https://github.com/r2adio/kaze",
+          endpoints: { health: "/health" },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    // 404 for unknown endpoints
     return new Response(
       JSON.stringify({
-        message: "Kaze API Rate Limiting Service",
-        version: "1.0.0",
-        endpoints: {
-          health: "/health",
-          rateLimit: "",
-          abuseDetection: "",
-        },
+        error: "Not Found",
+        message: `Endpoint ${url.pathname} not found`,
       }),
       {
-        status: 200,
+        status: 404,
         headers: { "Content-Type": "application/json" },
       },
     );
   },
 });
 
-console.log(`🚀 Kaze server running on http://localhost:${server.port}`);
+console.log(`🚀 Kaze server running on http://localhost:${PORT}`);
