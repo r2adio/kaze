@@ -38,13 +38,13 @@ Kaze (Japanese for "wind" 風) is a distributed rate limiter built with TypeScri
 git clone https://github.com/r2adio/kaze
 cd kaze
 
-bun install # Install dependencies
+npm install # Install dependencies
 
 cp .env.example .env # Copy environment configuration
 
-bun test # Run tests
+npm run test # Run tests
 
-bun run dev # Start development server
+npm run dev # Start development server
 ```
 
 The server will start on `http://localhost:3000`
@@ -52,42 +52,23 @@ The server will start on `http://localhost:3000`
 ### Available Scripts
 
 ```bash
-bun run dev              # Start dev server with hot reload
-bun run start            # Start production server
-bun run build            # Build for production
-bun test                 # Run all tests
-bun test:watch           # Run tests in watch mode
-bun test:unit            # Run unit tests only
-bun test:integration     # Run integration tests only
+npm run dev              # Start dev server with hot reload
+npm run start            # Start production server
+npm run build            # Build for production
+npm test                 # Run all tests
+npm test:watch           # Run tests in watch mode
+npm test:unit            # Run unit tests only
+npm test:integration     # Run integration tests only
 ```
 
 ## 📁 Project Structure
 
-```
-kaze/
-├── src/
-│   ├── domain/
-│   │   ├── entities/          # Core domain entities
-│   │   │   ├── token_bucket.ts
-│   │   │   └── token_bucket.test.ts
-│   │   ├── services/          # Domain services (Phase 1)
-│   │   └── value_objects/     # Value objects (Phase 1)
-│   ├── infrastructure/
-│   │   └── config/            # Configuration management (Phase 1)
-│   ├── middleware/            # HTTP middleware (Phase 1)
-│   └── index.ts               # Server entry point
-├── tests/
-│   └── integration/           # Integration tests (Phase 1)
-├── .env.example               # Environment variables template
-├── package.json
-└── README.md
-```
 
 ## 🛠️ Tech Stack
 
-- **Runtime:** [Bun](https://bun.sh/) - Fast JavaScript runtime
+- **Runtime:** [node](https://nodejs.org) - Fast JavaScript runtime
 - **Language:** TypeScript 5.x with strict mode
-- **Testing:** Bun's built-in test runner
+- **Testing:** Vitest testing framework
 - **Validation:** Zod (for configuration validation in Phase 1)
 - **Future:** Redis (Phase 3), Docker (Phase 4)
 
@@ -177,11 +158,11 @@ Service information
 The project uses Bun's built-in test runner. Tests are co-located with source files (`*.test.ts`).
 
 ```bash
-bun test # Run all tests
+npm run test # Run all tests
 
-bun test --coverage # Run with coverage
+# npm run test --coverage # Run with coverage
 
-bun test --watch # Watch mode
+npm run test:watch # Watch mode
 ```
 
 ## 📚 Resources

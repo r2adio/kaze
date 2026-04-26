@@ -6,62 +6,58 @@
  * by Hello Interview - SWE Interview Preparation
  */
 
-import { serve } from "bun";
-import packageJson from "../package.json";
+import http from "node:http";
 
 const PORT = Number(process.env.PORT) || 3000;
 
-const server = serve({
-  port: PORT,
-  fetch(req) {
-    const url = new URL(req.url);
+const VERSION = process.env.npm_package_version || "0.1.0";
 
-    // TODO: Rate limiting middleware will be applied in phase 1
+const server = http.createServer((req, res) => {
+  if (!req.url) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Bad Request" }));
+    return;
+  }
 
-    // Health check endpoint
-    if (url.pathname === "/health") {
-      return new Response(
-        JSON.stringify({
-          status: "healthy",
-          service: "kaze",
-          version: packageJson.version || "0.1.0",
-          timestamp: new Date().toISOString(),
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
+  const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
 
-    // Root endpoint - service information
-    if (url.pathname === "/") {
-      return new Response(
-        JSON.stringify({
-          message: "Kaze - Distributed Rate Limiter",
-          version: packageJson.version || "0.1.0",
-          documentation: "https://github.com/r2adio/kaze",
-          endpoints: { health: "/health" },
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
+  // TODO: Rate limiting middleware will be applied in phase 1
 
-    // 404 for unknown endpoints
-    return new Response(
+  if (url.pathname === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
       JSON.stringify({
-        error: "Not Found",
-        message: `Endpoint ${url.pathname} not found`,
+        status: "healthy",
+        service: "kaze",
+        version: VERSION,
+        timestamp: new Date().toISOString(),
       }),
-      {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      },
     );
-  },
+    return;
+  }
+
+  if (url.pathname === "/") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        message: "Kaze - Distributed Rate Limiter",
+        version: VERSION,
+        documentation: "https://github.com/r2adio/kaze",
+        endpoints: { health: "/health" },
+      }),
+    );
+    return;
+  }
+
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(
+    JSON.stringify({
+      error: "Not Found",
+      message: `Endpoint ${url.pathname} not found`,
+    }),
+  );
 });
 
-console.log(`🚀 Kaze server running on http://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`Kaze server running on http://localhost:${PORT}`);
+});

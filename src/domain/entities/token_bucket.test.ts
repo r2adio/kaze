@@ -1,13 +1,13 @@
 import { TokenBucket } from "./token_bucket";
-import { describe, test, expect, beforeEach, afterEach, jest } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 
 describe("TokenBucket", () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   test("should initialize with full capacity tokens", () => {
@@ -25,7 +25,7 @@ describe("TokenBucket", () => {
     const bucket = new TokenBucket(1, 1);
     bucket.allow();
     expect(bucket.allow()).toBe(false);
-    jest.advanceTimersByTime(999); // refill not yet happened (0.9s)
+    vi.advanceTimersByTime(999); // refill not yet happened (0.9s)
     expect(bucket.allow()).toBe(false);
   });
 
@@ -35,14 +35,14 @@ describe("TokenBucket", () => {
     bucket.allow();
     expect(bucket.allow()).toBe(false);
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     expect(bucket.allow()).toBe(true);
   });
 
   test("should not exceed capacity when refilling", () => {
     const bucket = new TokenBucket(3, 5);
     bucket.allow();
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
 
     for (let i = 0; i < 3; i++) {
       expect(bucket.allow()).toBe(true);

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import getClientIP from "./get_client_id";
 
 // helper function: create req for tests
