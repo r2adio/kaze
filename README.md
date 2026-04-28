@@ -28,7 +28,7 @@ Kaze (Japanese for "wind" 風) is a distributed rate limiter built with TypeScri
 
 ### Prerequisites
 
-- [Node](https://nodejs.org) v1.3.11 or higher
+- [Node](https://nodejs.org) v20 or higher (production will target Node 22 LTS)
 - Git
 
 ### Installation

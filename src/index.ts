@@ -6,58 +6,49 @@
  * by Hello Interview - SWE Interview Preparation
  */
 
-import http from "node:http";
+import Fastify from "fastify";
 
 const PORT = Number(process.env.PORT) || 3000;
 
 const VERSION = process.env.npm_package_version || "0.1.0";
 
-const server = http.createServer((req, res) => {
-	if (!req.url) {
-		res.writeHead(400, { "Content-Type": "application/json" });
-		res.end(JSON.stringify({ error: "Bad Request" }));
-		return;
-	}
+const fastify = Fastify({ logger: true });
 
-	const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-
-	// TODO: Rate limiting middleware will be applied in phase 1
-
-	if (url.pathname === "/health") {
-		res.writeHead(200, { "Content-Type": "application/json" });
-		res.end(
-			JSON.stringify({
-				status: "healthy",
-				service: "kaze",
-				version: VERSION,
-				timestamp: new Date().toISOString(),
-			}),
-		);
-		return;
-	}
-
-	if (url.pathname === "/") {
-		res.writeHead(200, { "Content-Type": "application/json" });
-		res.end(
-			JSON.stringify({
-				message: "Kaze - Distributed Rate Limiter",
-				version: VERSION,
-				documentation: "https://github.com/r2adio/kaze",
-				endpoints: { health: "/health" },
-			}),
-		);
-		return;
-	}
-
-	res.writeHead(404, { "Content-Type": "application/json" });
-	res.end(
-		JSON.stringify({
-			error: "Not Found",
-			message: `Endpoint ${url.pathname} not found`,
-		}),
-	);
+fastify.get("/health", async () => {
+	return {
+		status: "healthy",
+		service: "kaze",
+		version: VERSION,
+		timestamp: new Date().toISOString(),
+	};
 });
 
-server.listen(PORT, () => {
-	console.log(`Kaze server running on http://localhost:${PORT}`);
+fastify.get("/ready", async () => {
+	// Later: check redis/postgres connectivity.
+	return {
+		status: "ready",
+		service: "kaze",
+		version: VERSION,
+		timestamp: new Date().toISOString(),
+	};
 });
+
+fastify.get("/", async () => {
+	return {
+		message: "Kaze - Distributed Rate Limiter",
+		version: VERSION,
+		documentation: "https://github.com/r2adio/kaze",
+		endpoints: {
+			health: "/health",
+			ready: "/ready",
+		},
+	};
+});
+
+try {
+	const addr = await fastify.listen({ port: PORT, host: "0.0.0.0" });
+	fastify.log.info({ addr }, "server listening");
+} catch (err) {
+	fastify.log.error(err);
+	process.exit(1);
+}
