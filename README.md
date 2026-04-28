@@ -2,7 +2,7 @@
 
 **A high-performance distributed rate limiting service**
 
-Kaze (Japanese for "wind" 風) is a distributed rate limiter built with TypeScript and Bun. This project was inspired by the YouTube video ["Design a Distributed Rate Limiter w/ Ex-Meta Staff Engineer: System Design Breakdown"](https://youtu.be/MIJFyUPG4Z4) by Hello Interview - SWE Interview Preparation.
+Kaze (Japanese for "wind" 風) is a distributed rate limiter built with TypeScript and Node. This project was inspired by the YouTube video ["Design a Distributed Rate Limiter w/ Ex-Meta Staff Engineer: System Design Breakdown"](https://youtu.be/MIJFyUPG4Z4) by Hello Interview - SWE Interview Preparation.
 
 ## 🎯 Project Status
 
@@ -28,7 +28,7 @@ Kaze (Japanese for "wind" 風) is a distributed rate limiter built with TypeScri
 
 ### Prerequisites
 
-- [Bun](https://bun.sh/) v1.3.11 or higher
+- [Node](https://nodejs.org) v1.3.11 or higher
 - Git
 
 ### Installation
@@ -155,7 +155,7 @@ Service information
 
 ## 🧪 Testing
 
-The project uses Bun's built-in test runner. Tests are co-located with source files (`*.test.ts`).
+The project uses Vitest test runner. Tests are co-located with source files (`*.test.ts`).
 
 ```bash
 npm run test # Run all tests
