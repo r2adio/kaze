@@ -24,7 +24,7 @@ fastify.get("/health", async () => {
 });
 
 fastify.get("/ready", async () => {
-	// Later: check redis/postgres connectivity.
+	// TODO: check redis/postgres connectivity.
 	return {
 		status: "ready",
 		service: "kaze",

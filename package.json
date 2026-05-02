@@ -8,6 +8,8 @@
 		"build": "tsc",
 		"dev": "tsx watch src/index.ts",
 		"start": "node dist/index.js",
+		"dev:upstream": "npm --prefix upstream run dev",
+		"start:upstream": "npm --prefix upstream run start",
 		"biome:check": "npx @biomejs/biome check --write",
 		"test": "vitest run",
 		"test:watch": "vitest --watch"
