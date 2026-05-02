@@ -15,7 +15,7 @@
 		"test:watch": "vitest --watch"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.13",
+		"@biomejs/biome": "2.4.14",
 		"@types/node": "^25.6.0",
 		"tsx": "^4.21.0",
 		"typescript": "^6.0.3",
@@ -23,6 +23,6 @@
 	},
 	"dependencies": {
 		"fastify": "^5.8.5",
-		"zod": "^4.3.6"
+		"zod": "^4.4.2"
 	}
 }

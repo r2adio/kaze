@@ -1,3 +1,15 @@
+/**
+ * Upstream Demo Service
+ *
+ * This is a small standalone HTTP API that represents a protected upstream service.
+ * During development, Kaze runs as a reverse-proxy gateway in front of this service:
+ * requests should go to Kaze first, and Kaze will forward them here (and later apply
+ * rate limiting before proxying).
+ *
+ * The routes are intentionally simple and predictable so we can validate proxying
+ * behavior (status/body/headers) and latency handling before implementing the full
+ * distributed rate limiter.
+ */
 import Fastify from "fastify";
 
 const PORT = Number(process.env.UPSTREAM_PORT) || 4000;
