@@ -6,7 +6,7 @@ Kaze (Japanese for "wind" 風) is a distributed rate limiter built with TypeScri
 
 ## Project Status
 
-**Current focus:** Week 1 - Reverse Proxy Gateway (in progress)
+**Current focus:** Reverse Proxy Gateway (in progress)
 
 ### Implemented
 
@@ -163,15 +163,15 @@ curl http://127.0.0.1:4000/ping
 - `GET /echo`
 - `GET /health`
 
-## Project Plan
-
-The full, self-sufficient roadmap is documented in `PROJECT_PLAN.md`. It includes:
-
-- Locked decisions and scope (reverse-proxy gateway, Postgres + Drizzle, Redis token bucket)
-- Week-by-week milestones with acceptance criteria
-- Local distributed demo plan (Compose + k6)
-- Deployment checklist for DigitalOcean (Ubuntu 24)
-- Failure modes and operational checklists
+<!-- ## Project Plan -->
+<!---->
+<!-- The full, self-sufficient roadmap is documented in `PROJECT_PLAN.md`. It includes: -->
+<!---->
+<!-- - Locked decisions and scope (reverse-proxy gateway, Postgres + Drizzle, Redis token bucket) -->
+<!-- - Week-by-week milestones with acceptance criteria -->
+<!-- - Local distributed demo plan (Compose + k6) -->
+<!-- - Deployment checklist for DigitalOcean (Ubuntu 24) -->
+<!-- - Failure modes and operational checklists -->
 
 ## Testing
 
