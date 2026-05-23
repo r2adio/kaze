@@ -1,15 +1,12 @@
 {
 	"compilerOptions": {
-		// Environment setup & latest features
 		"lib": ["ES2022", "DOM"],
 		"target": "ES2022",
-		"module": "NodeNext",
+		"module": "ESNext",
 		"moduleDetection": "force",
-		"jsx": "react-jsx",
 		"allowJs": true,
 
-		// Node ESM emit
-		"moduleResolution": "NodeNext",
+		"moduleResolution": "Bundler",
 		"verbatimModuleSyntax": true,
 		"noEmit": false,
 		"outDir": "dist",
@@ -18,18 +15,17 @@
 
 		"types": ["node"],
 
-		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 
-		// Some stricter flags (disabled by default)
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"noPropertyAccessFromIndexSignature": false
-	},
-	"include": ["src"],
-	"exclude": ["**/*.test.ts", "tests", "dist", "node_modules"]
+    "noPropertyAccessFromIndexSignature": false,
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src"],
+  "exclude": ["**/*.test.ts", "tests", "dist", "node_modules"]
 }

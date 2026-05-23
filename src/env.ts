@@ -8,18 +8,18 @@ const envSchema = z.object({
 	PORT: z.coerce.number().default(3000), // read as string, coerce to number
 	UPSTREAM_BASE_URL: z.string().url().default("http://127.0.0.1:4000"),
 
-	// Week 2: Admin API security
+	// admin API security
 	ADMIN_API_KEY: z.string().min(1),
 	ADMIN_BASIC_USER: z.string().min(1),
 	ADMIN_BASIC_PASS: z.string().min(1),
 
-	// Week 2: Rule cache refresh interval
+	// rule cache refresh interval
 	RULES_REFRESH_MS: z.coerce.number().int().positive().default(5000),
 
-	// Week 2: Postgres
+	// postgres
 	DATABASE_URL: z.string().min(1),
 
-	// Week 3: Redis
+	// redis
 	REDIS_HOST: z.string().min(1).default("localhost"),
 	REDIS_PORT: z.coerce.number().int().positive().default(6379),
 	REDIS_PASSWORD: z.string().optional().default(""),

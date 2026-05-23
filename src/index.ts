@@ -5,7 +5,7 @@
  * Inspired by: "Design a Distributed Rate Limiter w/ Ex-Meta Staff Engineer"
  * by Hello Interview - SWE Interview Preparation
  */
-import { buildServer } from "./app.js";
+import { buildServer } from "@/app";
 
 const PORT = Number(process.env.PORT) || 3000;
 const UPSTREAM_BASE_URL =
