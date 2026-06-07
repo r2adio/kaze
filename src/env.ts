@@ -8,10 +8,6 @@ const envSchema = z.object({
 	PORT: z.coerce.number().default(3000), // read as string, coerce to number
 	UPSTREAM_BASE_URL: z.string().url().default("http://127.0.0.1:4000"),
 
-	// admin API security
-	ADMIN_API_KEY: z.string().min(1),
-	ADMIN_BASIC_USER: z.string().min(1),
-	ADMIN_BASIC_PASS: z.string().min(1),
 
 	// rule cache refresh interval
 	RULES_REFRESH_MS: z.coerce.number().int().positive().default(5000),
