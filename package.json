@@ -1,6 +1,6 @@
 {
 	"name": "kaze",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "A high-performance distributed rate limiting service",
 	"type": "module",
 	"private": true,
@@ -32,6 +32,7 @@
 		"drizzle-orm": "^0.45.2",
 		"fastify": "^5.8.5",
 		"pg": "^8.20.0",
+		"redis": "^6.0.0",
 		"zod": "^4.4.3"
 	}
 }

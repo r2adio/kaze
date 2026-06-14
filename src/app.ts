@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import replyFrom from "@fastify/reply-from";
 import Fastify from "fastify";
 import { pool } from "@/db";
+import { redis } from "./redis";
 
 type AppOptions = {
 	upstreamBaseUrl: string;
@@ -14,52 +15,94 @@ export function buildServer({ upstreamBaseUrl, logger = true }: AppOptions) {
 		genReqId: () => randomUUID(),
 	});
 
-	fastify.get("/health", async () => {
-		let dbStatus = "UP",
-			cacheStatus = "DOWN";
-		let dbError: string | undefined;
-		let dbLatency: number | undefined;
+	fastify.get("/health", async (_request, reply) => {
+		const checks = await Promise.allSettled([
+			(async () => {
+				const start = performance.now();
 
-		const start = performance.now();
-		try {
-			await pool.query("SELECT 1");
-			dbLatency = Math.round(performance.now() - start);
-		} catch (err) {
-			dbStatus = "DOWN";
-			dbError = err instanceof Error ? err.message : String(err);
-		}
+				await pool.query("SELECT 1");
 
-		const isUp = dbStatus === "UP" && cacheStatus === "UP";
+				return {
+					status: "UP",
+					latencyMs: Math.round(performance.now() - start),
+				};
+			})(),
+
+			(async () => {
+				const start = performance.now();
+
+				await redis.ping();
+
+				return {
+					status: "UP",
+					latencyMs: Math.round(performance.now() - start),
+				};
+			})(),
+		]);
+
+		const [dbCheck, redisCheck] = checks;
+
+		const database =
+			dbCheck.status === "fulfilled"
+				? {
+						status: "UP",
+						details: {
+							database: "PostgreSQL",
+							latencyMs: dbCheck.value.latencyMs,
+						},
+					}
+				: {
+						status: "DOWN",
+						details: {
+							database: "PostgreSQL",
+							error:
+								dbCheck.reason instanceof Error
+									? dbCheck.reason.message
+									: String(dbCheck.reason),
+						},
+					};
+
+		const cache =
+			redisCheck.status === "fulfilled"
+				? {
+						status: "UP",
+						details: {
+							cache: "Redis",
+							latencyMs: redisCheck.value.latencyMs,
+						},
+					}
+				: {
+						status: "DOWN",
+						details: {
+							cache: "Redis",
+							error:
+								redisCheck.reason instanceof Error
+									? redisCheck.reason.message
+									: String(redisCheck.reason),
+						},
+					};
+
+		const isReady = database.status === "UP" && cache.status === "UP";
+
+		reply.code(isReady ? 200 : 503);
 
 		return {
-			status: isUp ? "UP" : "DOWN",
+			status: isReady ? "UP" : "DOWN",
 			components: {
-				database: {
-					status: dbStatus,
-					details: {
-						database: "PostgreSQL",
-						...(dbLatency !== undefined && {
-							latencyMs: dbLatency,
-						}),
-						...(dbError !== undefined && { error: dbError }),
-					},
-				},
-				cache: {
-					status: "DOWN",
-					error: "Redis connection timeout",
-				},
+				database,
+				cache,
 			},
 		};
 	});
 
-	fastify.get("/status", async () => {
+	fastify.get("/info", async () => {
 		return {
-			status: "ready",
+			status: "running",
 			environment: process.env.NODE_ENV ?? "development",
 			version: process.env.npm_package_version || "0.1.0",
 			uptime: process.uptime(),
 			system: {
-				cpuUsage: process.cpuUsage(),
+				cpuTime: process.cpuUsage(),
 				memoryUsage: process.memoryUsage(),
 			},
 		};
@@ -67,13 +110,10 @@ export function buildServer({ upstreamBaseUrl, logger = true }: AppOptions) {
 
 	fastify.get("/", async () => {
 		return {
-			message: "Kaze - Distributed Rate Limiter",
-			version: process.env.npm_package_version || "0.1.0",
+			message: "Kaze",
+			description: "Distributed Rate Limiter",
+			version: process.env.npm_package_version,
 			documentation: "https://github.com/r2adio/kaze",
-			endpoints: {
-				health: "/health",
-				ready: "/ready",
-			},
 		};
 	});
 
