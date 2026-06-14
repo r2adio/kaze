@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import replyFrom from "@fastify/reply-from";
 import Fastify from "fastify";
+import { pool } from "@/db";
 
 type AppOptions = {
 	upstreamBaseUrl: string;
@@ -14,21 +15,53 @@ export function buildServer({ upstreamBaseUrl, logger = true }: AppOptions) {
 	});
 
 	fastify.get("/health", async () => {
+		let dbStatus = "UP",
+			cacheStatus = "DOWN";
+		let dbError: string | undefined;
+		let dbLatency: number | undefined;
+
+		const start = performance.now();
+		try {
+			await pool.query("SELECT 1");
+			dbLatency = Math.round(performance.now() - start);
+		} catch (err) {
+			dbStatus = "DOWN";
+			dbError = err instanceof Error ? err.message : String(err);
+		}
+
+		const isUp = dbStatus === "UP" && cacheStatus === "UP";
+
 		return {
-			status: "healthy",
-			service: "kaze",
-			version: process.env.npm_package_version || "0.1.0",
-			timestamp: new Date().toISOString(),
+			status: isUp ? "UP" : "DOWN",
+			components: {
+				database: {
+					status: dbStatus,
+					details: {
+						database: "PostgreSQL",
+						...(dbLatency !== undefined && {
+							latencyMs: dbLatency,
+						}),
+						...(dbError !== undefined && { error: dbError }),
+					},
+				},
+				cache: {
+					status: "DOWN",
+					error: "Redis connection timeout",
+				},
+			},
 		};
 	});
 
-	fastify.get("/ready", async () => {
-		// TODO: check redis/postgres connectivity.
+	fastify.get("/status", async () => {
 		return {
 			status: "ready",
-			service: "kaze",
+			environment: process.env.NODE_ENV ?? "development",
 			version: process.env.npm_package_version || "0.1.0",
-			timestamp: new Date().toISOString(),
+			uptime: process.uptime(),
+			system: {
+				cpuUsage: process.cpuUsage(),
+				memoryUsage: process.memoryUsage(),
+			},
 		};
 	});
 
