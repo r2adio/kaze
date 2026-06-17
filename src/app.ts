@@ -1,150 +1,38 @@
-import { randomUUID } from "node:crypto";
-import replyFrom from "@fastify/reply-from";
-import Fastify from "fastify";
-import { pool } from "@/db";
-import { redis } from "./redis";
+import { join } from "node:path";
+import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
+import { FastifyPluginAsync, FastifyServerOptions } from "fastify";
 
-type AppOptions = {
-	upstreamBaseUrl: string;
-	logger?: boolean;
+export interface AppOptions
+	extends FastifyServerOptions,
+		Partial<AutoloadPluginOptions> {}
+// Pass --options via CLI arguments in command to enable these options.
+const options: AppOptions = {};
+
+const app: FastifyPluginAsync<AppOptions> = async (
+	fastify,
+	opts,
+): Promise<void> => {
+	// Place here your custom code!
+
+	// Do not touch the following lines
+
+	// This loads all plugins defined in plugins
+	// those should be support plugins that are reused
+	// through your application
+	// eslint-disable-next-line no-void
+	void fastify.register(AutoLoad, {
+		dir: join(__dirname, "plugins"),
+		options: opts,
+	});
+
+	// This loads all plugins defined in routes
+	// define your routes in one of these
+	// eslint-disable-next-line no-void
+	void fastify.register(AutoLoad, {
+		dir: join(__dirname, "routes"),
+		options: opts,
+	});
 };
 
-export function buildServer({ upstreamBaseUrl, logger = true }: AppOptions) {
-	const fastify = Fastify({
-		logger,
-		genReqId: () => randomUUID(),
-	});
-
-	fastify.get("/health", async (_request, reply) => {
-		const checks = await Promise.allSettled([
-			(async () => {
-				const start = performance.now();
-
-				await pool.query("SELECT 1");
-
-				return {
-					status: "UP",
-					latencyMs: Math.round(performance.now() - start),
-				};
-			})(),
-
-			(async () => {
-				const start = performance.now();
-
-				await redis.ping();
-
-				return {
-					status: "UP",
-					latencyMs: Math.round(performance.now() - start),
-				};
-			})(),
-		]);
-
-		const [dbCheck, redisCheck] = checks;
-
-		const database =
-			dbCheck.status === "fulfilled"
-				? {
-						status: "UP",
-						details: {
-							database: "PostgreSQL",
-							latencyMs: dbCheck.value.latencyMs,
-						},
-					}
-				: {
-						status: "DOWN",
-						details: {
-							database: "PostgreSQL",
-							error:
-								dbCheck.reason instanceof Error
-									? dbCheck.reason.message
-									: String(dbCheck.reason),
-						},
-					};
-
-		const cache =
-			redisCheck.status === "fulfilled"
-				? {
-						status: "UP",
-						details: {
-							cache: "Redis",
-							latencyMs: redisCheck.value.latencyMs,
-						},
-					}
-				: {
-						status: "DOWN",
-						details: {
-							cache: "Redis",
-							error:
-								redisCheck.reason instanceof Error
-									? redisCheck.reason.message
-									: String(redisCheck.reason),
-						},
-					};
-
-		const isReady = database.status === "UP" && cache.status === "UP";
-
-		reply.code(isReady ? 200 : 503);
-
-		return {
-			status: isReady ? "UP" : "DOWN",
-			components: {
-				database,
-				cache,
-			},
-		};
-	});
-
-	fastify.get("/info", async () => {
-		return {
-			status: "running",
-			environment: process.env.NODE_ENV ?? "development",
-			version: process.env.npm_package_version || "0.1.0",
-			uptime: process.uptime(),
-			system: {
-				cpuTime: process.cpuUsage(),
-				memoryUsage: process.memoryUsage(),
-			},
-		};
-	});
-
-	fastify.get("/", async () => {
-		return {
-			message: "Kaze",
-			description: "Distributed Rate Limiter",
-			version: process.env.npm_package_version,
-			documentation: "https://github.com/r2adio/kaze",
-		};
-	});
-
-	fastify.addHook("onSend", async (request, reply) => {
-		if (!reply.getHeader("x-request-id")) {
-			reply.header("x-request-id", request.id);
-		}
-	});
-
-	fastify.addHook("onRequest", async (request) => {
-		if (!request.headers["x-request-id"]) {
-			request.headers["x-request-id"] = request.id;
-		}
-	});
-
-	fastify.register(replyFrom, {
-		base: upstreamBaseUrl,
-	});
-
-	fastify.setNotFoundHandler(async (request, reply) => {
-		const headers = {
-			...request.headers,
-			"x-request-id": request.headers["x-request-id"],
-		};
-		reply.headers(headers);
-
-		return reply.from(request.url, {
-			body: request.body,
-			method: request.method,
-		});
-	});
-
-	return fastify;
-}
+export default app;
+export { app, options };
