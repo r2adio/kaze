@@ -5,34 +5,35 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"build": "tsc",
-		"dev": "tsx watch src/index.ts",
-		"start": "node dist/index.js",
-		"dev:upstream": "npm --prefix upstream run dev",
-		"start:upstream": "npm --prefix upstream run start",
-		"dev:all": "concurrently \"npm run dev\" \"npm run dev:upstream\"",
+		"start": "npm run build:ts && fastify start -l info dist/app.js",
+		"build:ts": "tsc",
+		"watch:ts": "tsc -w",
+		"dev": "npm run build:ts && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch:ts\" \"npm:dev:start\"",
+		"dev:start": "fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js",
 		"biome:check": "npx @biomejs/biome check --write",
 		"lint": "npx @biomejs/biome check",
-		"test": "vitest run",
-		"test:watch": "vitest --watch"
+		"test": "npm run build:ts && tsc -p test/tsconfig.json && c8 node --test -r tsx \"test/**/*.ts\""
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.15",
-		"@types/node": "^25.8.0",
+		"@biomejs/biome": "2.5.0",
+		"@types/node": "^25.9.3",
 		"@types/pg": "^8.20.0",
-		"concurrently": "^9.2.1",
+		"c8": "^11.0.0",
+		"concurrently": "^10.0.3",
 		"drizzle-kit": "^0.31.10",
-		"tsx": "^4.22.0",
-		"typescript": "^6.0.3",
-		"vitest": "^4.1.6"
+		"fastify-tsconfig": "^3.0.0",
+		"tsx": "^4.22.4",
+		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"@fastify/reply-from": "^12.6.2",
+		"@fastify/autoload": "^6.3.1",
+		"@fastify/sensible": "^6.0.4",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
 		"fastify": "^5.8.5",
-		"pg": "^8.20.0",
-		"redis": "^6.0.0",
+		"fastify-cli": "^8.0.0",
+		"fastify-plugin": "^6.0.0",
+		"pg": "^8.21.0",
 		"zod": "^4.4.3"
 	}
 }
