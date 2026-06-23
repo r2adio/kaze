@@ -5,9 +5,13 @@
 // This separation makes the app instance highly testable without a running server.
 
 import path from "node:path";
-import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyAutoload from "@fastify/autoload";
-import { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
+import fastifyRateLimit from "@fastify/rate-limit";
+import type {
+	FastifyError,
+	FastifyInstance,
+	FastifyPluginOptions,
+} from "fastify";
 
 export default async function serviceApp(
 	fastify: FastifyInstance,
