@@ -5,6 +5,7 @@
 // This separation makes the app instance highly testable without a running server.
 
 import path from "node:path";
+import fastifyRateLimit from "@fastify/rate-limit";
 import fastifyAutoload from "@fastify/autoload";
 import { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
 
@@ -12,7 +13,11 @@ export default async function serviceApp(
 	fastify: FastifyInstance,
 	opts: FastifyPluginOptions,
 ) {
-	delete opts.skipOverride;
+	await fastify.register(fastifyRateLimit, {
+		// options for rate limiting, can be adjusted as needed
+		max: 100, // max requests per window
+		timeWindow: "1 minute",
+	});
 	await fastify.register(fastifyAutoload, {
 		dir: path.join(import.meta.dirname, "plugins/external"),
 		options: {},
