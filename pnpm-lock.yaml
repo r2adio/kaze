@@ -11,9 +11,15 @@ importers:
       '@fastify/autoload':
         specifier: ^6.3.1
         version: 6.3.1
+      '@fastify/rate-limit':
+        specifier: ^11.1.0
+        version: 11.1.0
       '@fastify/sensible':
         specifier: ^6.0.4
         version: 6.0.4
+      close-with-grace:
+        specifier: ^2.5.0
+        version: 2.5.0
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2

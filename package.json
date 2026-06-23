@@ -10,8 +10,8 @@
 		"watch:ts": "tsc -w",
 		"dev": "npm run build:ts && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch:ts\" \"npm:dev:start\"",
 		"dev:start": "fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js",
-		"biome:check": "npx @biomejs/biome check --write",
-		"lint": "npx @biomejs/biome check",
+		"check": "npx @biomejs/biome check",
+		"check:write": "npx @biomejs/biome check --write",
 		"test": "npm run build:ts && tsc -p test/tsconfig.json && c8 node --test -r tsx \"test/**/*.ts\""
 	},
 	"devDependencies": {
@@ -28,6 +28,7 @@
 	"dependencies": {
 		"@fastify/autoload": "^6.3.1",
 		"@fastify/sensible": "^6.0.4",
+		"close-with-grace": "^2.5.0",
 		"dotenv": "^17.4.2",
 		"drizzle-orm": "^0.45.2",
 		"fastify": "^5.8.5",

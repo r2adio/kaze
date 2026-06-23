@@ -1,3 +1,9 @@
+// core Fastify application instance and its plugins/routes.
+// It's responsible for setting up the application's structure, middleware,
+// and business logic, but not starting the HTTP server itself.
+// Exports a function that registers plugins and sets up application-level configurations.
+// This separation makes the app instance highly testable without a running server.
+
 import path from "node:path";
 import fastifyAutoload from "@fastify/autoload";
 import { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
