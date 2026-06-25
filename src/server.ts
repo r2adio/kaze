@@ -7,6 +7,7 @@ import closeWithGrace from "close-with-grace";
 import Fastify from "fastify";
 import fp from "fastify-plugin";
 
+import env from "./env";
 import serviceApp from "./app";
 
 function getLoggerOptions() {
@@ -23,7 +24,7 @@ function getLoggerOptions() {
 			},
 		};
 	}
-	return { level: process.env.LOG_LEVEL ?? "silent" };
+	return { level: env.LOG_LEVEL };
 }
 
 const app = Fastify({
@@ -56,7 +57,7 @@ async function init() {
 
 	// delay is the number of milliseconds for the graceful close to finish
 	closeWithGrace(
-		{ delay: parseInt(process.env.FASTIFY_CLOSE_GRACE_DELAY ?? "500", 10) },
+		{ delay: env.FASTIFY_CLOSE_GRACE_DELAY },
 		// signal, manual are available with err
 		async ({ err }) => {
 			if (err) {
@@ -69,7 +70,7 @@ async function init() {
 	await app.ready();
 
 	try {
-		await app.listen({ port: parseInt(process.env.PORT ?? "3000", 10) });
+		await app.listen({ port: env.PORT });
 	} catch (err) {
 		app.log.error(err);
 		process.exit(1);

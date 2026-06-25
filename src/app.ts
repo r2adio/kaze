@@ -13,10 +13,13 @@ import type {
 	FastifyPluginOptions,
 } from "fastify";
 
+import env from "./env";
+
 export default async function serviceApp(
 	fastify: FastifyInstance,
 	opts: FastifyPluginOptions,
 ) {
+	fastify.decorate("env", env);
 	await fastify.register(fastifyRateLimit, {
 		// options for rate limiting, can be adjusted as needed
 		max: 100, // max requests per window
@@ -83,4 +86,10 @@ export default async function serviceApp(
 			return { message: "Not found" };
 		},
 	);
+}
+
+declare module "fastify" {
+	interface FastifyInstance {
+		env: typeof env;
+	}
 }

@@ -6,20 +6,24 @@ const envSchema = z.object({
 		.enum(["development", "production", "test"])
 		.default("development"),
 	PORT: z.coerce.number().default(3000), // read as string, coerce to number
-	UPSTREAM_BASE_URL: z.string().url().default("http://127.0.0.1:4000"),
+	UPSTREAM_BASE_URL: z.url().default("http://127.0.0.1:4000"),
 
 	// rule cache refresh interval
 	RULES_REFRESH_MS: z.coerce.number().int().positive().default(5000),
+
+	// logging
+	LOG_LEVEL: z
+		.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+		.default("silent"),
+
+	// graceful shutdown delay (ms)
+	FASTIFY_CLOSE_GRACE_DELAY: z.coerce.number().int().nonnegative().default(500),
 
 	// postgres
 	DATABASE_URL: z.string().min(1),
 
 	// redis
-	REDIS_HOST: z.string().min(1).default("localhost"),
-	REDIS_PORT: z.coerce.number().int().positive().default(6379),
-	REDIS_PASSWORD: z.string().optional().default(""),
-	REDIS_DB: z.coerce.number().int().nonnegative().default(0),
-	REDIS_KEY_PREFIX: z.string().default("kaze:"),
+	REDIS_URL: z.url().default("redis://localhost:6379"),
 });
 
 export type env = z.infer<typeof envSchema>;
