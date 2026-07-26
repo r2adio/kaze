@@ -7,18 +7,11 @@
 import path from "node:path";
 import fastifyAutoload from "@fastify/autoload";
 import fastifyRateLimit from "@fastify/rate-limit";
-import type {
-	FastifyError,
-	FastifyInstance,
-	FastifyPluginOptions,
-} from "fastify";
+import type { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
 
 import env from "./env";
 
-export default async function serviceApp(
-	fastify: FastifyInstance,
-	opts: FastifyPluginOptions,
-) {
+export default async function serviceApp(fastify: FastifyInstance, opts: FastifyPluginOptions) {
 	fastify.decorate("env", env);
 	await fastify.register(fastifyRateLimit, {
 		// options for rate limiting, can be adjusted as needed
@@ -44,42 +37,23 @@ export default async function serviceApp(
 
 	fastify.setErrorHandler((err: FastifyError, req, res) => {
 		fastify.log.error(
-			{
-				err,
-				req: {
-					method: req.method,
-					url: req.url,
-					query: req.query,
-					params: req.params,
-				},
-			},
+			{ err, req: { method: req.method, url: req.url, query: req.query, params: req.params } },
 			"Unhandled error occurred",
 		);
 
 		res.code(err.statusCode ?? 500);
 
 		let message = "Internal Server Error";
-		if (err.statusCode && err.statusCode < 500) {
-			message = err.message;
-		}
+		if (err.statusCode && err.statusCode < 500) message = err.message;
 
 		return { message };
 	});
 
 	fastify.setNotFoundHandler(
-		{
-			preHandler: fastify.rateLimit({ max: 3, timeWindow: 500 }),
-		},
+		{ preHandler: fastify.rateLimit({ max: 3, timeWindow: 500 }) },
 		(req, res) => {
 			req.log.warn(
-				{
-					req: {
-						method: req.method,
-						url: req.url,
-						query: req.query,
-						params: req.params,
-					},
-				},
+				{ req: { method: req.method, url: req.url, query: req.query, params: req.params } },
 				"Resource not found",
 			);
 			res.code(404);

@@ -28,7 +28,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.4-alpine
     container_name: kaze-postgres
     restart: unless-stopped
     environment:

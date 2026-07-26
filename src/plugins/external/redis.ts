@@ -1,6 +1,6 @@
-import fp from "fastify-plugin";
 import fastifyRedis from "@fastify/redis";
-import { FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
+import fp from "fastify-plugin";
 
 async function redisPlugin(fastify: FastifyInstance) {
 	await fastify.register(fastifyRedis, { url: fastify.env.REDIS_URL });

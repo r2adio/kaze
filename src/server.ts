@@ -7,8 +7,8 @@ import closeWithGrace from "close-with-grace";
 import Fastify from "fastify";
 import fp from "fastify-plugin";
 
-import env from "./env";
 import serviceApp from "./app";
+import env from "./env";
 
 function getLoggerOptions() {
 	// if program running in interactive terminal
@@ -17,10 +17,7 @@ function getLoggerOptions() {
 			level: "info",
 			transport: {
 				target: "pino-pretty",
-				options: {
-					translateTime: "HH:MM:ss Z",
-					ignore: "pid,hostname",
-				},
+				options: { translateTime: "HH:MM:ss Z", ignore: "pid,hostname" },
 			},
 		};
 	}
@@ -33,9 +30,7 @@ const app = Fastify({
 	connectionTimeout: 120_000,
 	requestTimeout: 60_000,
 	keepAliveTimeout: 10_000,
-	http: {
-		headersTimeout: 15_000,
-	},
+	http: { headersTimeout: 15_000 },
 	ajv: {
 		customOptions: {
 			coerceTypes: "array", // change type of data to match type keyword
@@ -60,13 +55,10 @@ async function init() {
 		{ delay: env.FASTIFY_CLOSE_GRACE_DELAY },
 		// signal, manual are available with err
 		async ({ err }) => {
-			if (err) {
-				console.error(err);
-			}
+			if (err) console.error(err);
 			await closeYourServer();
 		},
 	);
-
 	await app.ready();
 
 	try {
