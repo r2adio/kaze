@@ -7,8 +7,8 @@ import closeWithGrace from "close-with-grace";
 import Fastify from "fastify";
 import fp from "fastify-plugin";
 
-import serviceApp from "./app";
-import env from "./env";
+import serviceApp from "./app.ts";
+import env from "./env.ts";
 
 function getLoggerOptions() {
 	// if program running in interactive terminal

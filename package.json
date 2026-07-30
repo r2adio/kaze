@@ -5,10 +5,9 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"start": "pnpm run build && node dist/server.js",
-		"build": "tsc",
-		"watch": "tsc -w",
-		"dev": "tsx --env-file=.env ./src/server.ts",
+		"start": "node ./src/server.ts",
+		"typecheck": "tsc",
+		"dev": "node --env-file=.env ./src/server.ts",
 		"test": "pnpm run db:seed && c8 tsx --test \"./test/**/*.ts\"",
 		"check": "biome check --error-on-warnings",
 		"check:fix": "biome check --write",

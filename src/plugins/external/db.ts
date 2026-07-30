@@ -1,5 +1,5 @@
 import { fastifyPlugin } from "fastify-plugin";
-import { db, pool } from "../db";
+import { db, pool } from "../../db";
 
 export default fastifyPlugin(async (fastify) => {
 	fastify.decorate("db", db);

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { TokenBucket } from "./token_bucket";
+import { TokenBucket } from "./token_bucket.ts";
 
 describe("TokenBucket", () => {
 	beforeEach(() => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import getClientIP from "./get_client_id";
+import getClientIP from "./get_client_id.ts";
 
 // helper function: create req for tests
 function createRequestWithHeaders(headers: Record<string, string>): Request {

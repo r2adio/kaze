@@ -9,7 +9,7 @@ import fastifyAutoload from "@fastify/autoload";
 import fastifyRateLimit from "@fastify/rate-limit";
 import type { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
 
-import env from "./env";
+import env from "./env.ts";
 
 export default async function serviceApp(fastify: FastifyInstance, opts: FastifyPluginOptions) {
 	fastify.decorate("env", env);
