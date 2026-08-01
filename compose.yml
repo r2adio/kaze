@@ -12,8 +12,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-3000}
-      UPSTREAM_BASE_URL: ${UPSTREAM_BASE_URL:-http://host.docker.internal:4000}
-      RULES_REFRESH_MS: ${RULES_REFRESH_MS:-5000}
+      HOST: ${HOST:-0.0.0.0}
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-pass}@postgres:5432/${POSTGRES_DB:-kaze}
       REDIS_URL: redis://redis:6379
     ports:
@@ -22,8 +21,6 @@ services:
     volumes:
       - ./:/app
       - /app/node_modules
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy

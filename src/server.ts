@@ -62,7 +62,7 @@ async function init() {
 	await app.ready();
 
 	try {
-		await app.listen({ port: env.PORT });
+		await app.listen({ host: env.HOST, port: env.PORT });
 	} catch (err) {
 		app.log.error(err);
 		process.exit(1);

@@ -4,10 +4,7 @@ import "dotenv/config";
 const envSchema = z.object({
 	NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 	PORT: z.coerce.number().default(3000), // read as string, coerce to number
-	UPSTREAM_BASE_URL: z.url().default("http://127.0.0.1:4000"),
-
-	// rule cache refresh interval
-	RULES_REFRESH_MS: z.coerce.number().int().positive().default(5000),
+	HOST: z.string().default("0.0.0.0"), // bind all interfaces so container port forwarding works
 
 	LOG_LEVEL: z
 		.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
