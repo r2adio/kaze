@@ -1,7 +1,7 @@
 {
 	"name": "kaze",
 	"version": "0.1.1",
-	"description": "A high-performance distributed rate limiting service",
+	"description": "A highly-performant distributed rate limiting service",
 	"type": "module",
 	"private": true,
 	"scripts": {
