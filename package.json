@@ -8,7 +8,7 @@
 		"start": "node ./src/server.ts",
 		"typecheck": "tsc",
 		"dev": "node --env-file=.env ./src/server.ts",
-		"test": "tsc -p test/tsconfig.json && c8 node --experimental-test-module-mocks --test \"test/**/*.ts\"",
+		"test": "tsc -p test/tsconfig.json && c8 node --test \"test/**/*.ts\"",
 		"check": "biome check --error-on-warnings",
 		"check:fix": "biome check --write",
 		"db:create": "tsx --env-file=.env ./scripts/create-database.ts",
