@@ -1,4 +1,4 @@
-import env from "./src/env.js";
+import env from "./src/env.ts";
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 

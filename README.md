@@ -9,7 +9,7 @@ Kaze (風, "wind") is a distributed rate limiter built with TypeScript, Fastify,
 ### Prerequisites
 
 - Node.js 22+ and pnpm
-- Docker (Postgres and Redis run in containers)
+- Podman or Docker (Postgres and Redis run in containers). Commands below use `docker compose`; with Podman, substitute `podman compose`.
 
 ### Run locally
 
@@ -17,21 +17,20 @@ Kaze (風, "wind") is a distributed rate limiter built with TypeScript, Fastify,
 pnpm install
 cp .env.example .env
 
-# start Postgres + Redis (+ the app in a container)
-docker compose up -d
+# start Postgres + Redis
+docker compose up -d postgres redis
 
-# set up the database
-pnpm exec drizzle-kit generate   # once, to generate migrations from src/db/schema.ts
+# set up the database (once)
+pnpm exec drizzle-kit generate   # regenerates migrations from src/db/schema.ts when the schema changes
 pnpm db:create
 pnpm db:migrate
 pnpm db:seed
 
-# run the gateway on your host instead of the container
-docker compose up -d postgres redis
+# run the gateway on the host
 pnpm dev
 ```
 
-The gateway runs on `http://localhost:3000`. DB scripts connect to `localhost:5432` (mapped by Postgres container).
+The gateway runs on `http://localhost:3000`. DB scripts connect to `localhost:5432` (mapped by the Postgres container). To run the whole stack (gateway included) in containers instead, use `docker compose up -d`.
 
 ## Proxy Usage
 
@@ -46,10 +45,11 @@ curl http://127.0.0.1:3000/healthz    # component status with per-dependency lat
 ## Testing
 
 ```bash
+docker compose up -d postgres redis
 pnpm test
 ```
 
-Runs the `node:test` suite (Node's native TypeScript type-stripping, no build step) and reports coverage via `c8`. The tests mock Postgres and Redis, so they run without containers.
+Runs the `node:test` suite (Node's native TypeScript type-stripping, no build step) and reports coverage via `c8`. The health/readiness tests build the real app and assert against the running services, so Postgres and Redis must be up.
 
 ## Resources
 
