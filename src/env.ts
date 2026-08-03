@@ -13,6 +13,9 @@ const envSchema = z.object({
 	// graceful shutdown delay (ms)
 	FASTIFY_CLOSE_GRACE_DELAY: z.coerce.number().int().nonnegative().default(500),
 
+	// how often the rate-limit rule cache is refreshed from Postgres (ms)
+	RULES_REFRESH_MS: z.coerce.number().int().positive().default(60_000),
+
 	DATABASE_URL: z.string().min(1),
 	REDIS_URL: z.url().default("redis://localhost:6379"),
 });
