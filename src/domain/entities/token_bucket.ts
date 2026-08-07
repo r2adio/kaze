@@ -7,12 +7,17 @@
  * - this algorithm allows for bursts of traffic while still enforcing a steady rate of requests
  */
 export class TokenBucket {
-	constructor(
-		private capacity: number,
-		private fillRate: number,
-		private tokens = capacity,
-		private lastRefill = Date.now(),
-	) {}
+	private capacity: number;
+	private fillRate: number;
+	private tokens: number;
+	private lastRefill: number;
+
+	constructor(capacity: number, fillRate: number, tokens = capacity, lastRefill = Date.now()) {
+		this.capacity = capacity;
+		this.fillRate = fillRate;
+		this.tokens = tokens;
+		this.lastRefill = lastRefill;
+	}
 
 	// refill tokens based on elapsed time, since last refill
 	private refill() {

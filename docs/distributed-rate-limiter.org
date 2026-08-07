@@ -1,0 +1,33 @@
+#+TITLE: rule-based distributed rate limiter (token bucket)
+
+* requesst lifecycle:
+  1. rules live in postgres (src/db/schema.ts + drizzle/0001, 0002)
+    - rate_limit_rules table, checkout `rateLimitRules` from src/db/schema.ts
+    - seed `scripts/seed-database.ts` inserts 3 defaults: /api/* (10/min), POST /login (5/min), /admin/* for IP 127.0.0.1 (100/min)
+
+  2. refreshable cache (src/application/rule-cache.ts)
+    - listEnabledRules reads enabled rows -> `RuleCache` snaps them in mem and re-pulls at set interval `RULES_REFRESH_MS`
+    - on db failure, keeps last good snapshot and logs a warning - the req path never blocks on live query (fail-open)
+
+  3. per-request client identity (src/domain/services/get_client_id.ts)
+    - precedence: x-api-key > x-forwarded-for > x-real-ip > socket IP. API keys are hashed (api:<sha256-first-16-hex>); IPs are ip:<ip>; nothing present → unknown.
+    - hash becomes the per-client bucket key
+
+  4. rule section (src/domain/rate-limit/matcher.ts)
+    - `findApplicableRule` to enabled rules that matches method/path/identity,
+    - then pics winner by priority(desc) -> path specificity → id
+    - no match -> allow req with no headers
+
+  5. enforcement (src/plugins/app/rate-limit.ts, an onRequest hook)
+    - For a matched rule, calls consumeToken against key kaze:<ruleId>:<identityId>, then stamps X-RateLimit-Limit/X-RateLimit-Remaining; on deny, replies 429 with Retry-After
+
+  6. atomic token bucket (src/infrastructure/redis/token-bucket.lua + .ts)
+    - a single lua script keeps REDIS HASH {token, last} per key:
+      computes elapsed-time refill, caps at capacity, consumes one if available, writes back, sets a PEXPIRE long enough to refill from empty to full.
+    - consumeToken evaluates the script via redis.eval and maps the {allowed, remaining, retryAfterMs} result
+    - as check-and-spend is one atomic script, it's safe across many gateway instances (distributed)
+
+  7. tests
+    - hermetic unit tests for matcher + client identity
+    - integration tests exercising the real Lua bucket
+    - full plugin against live postgres/redis

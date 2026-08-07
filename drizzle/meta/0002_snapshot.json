@@ -1,0 +1,144 @@
+{
+  "id": "155f0a3a-bb29-4c62-9512-10da9cde33ec",
+  "prevId": "7ddecadf-40c6-4ab0-ad92-1cbc272ed10f",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.rate_limit_rules": {
+      "name": "rate_limit_rules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "priority": {
+          "name": "priority",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "algorithm": {
+          "name": "algorithm",
+          "type": "rule_algorithm",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'token_bucket'"
+        },
+        "capacity": {
+          "name": "capacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refillRatePerSec": {
+          "name": "refillRatePerSec",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "matchMethod": {
+          "name": "matchMethod",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "matchPathPattern": {
+          "name": "matchPathPattern",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "clientSelectorType": {
+          "name": "clientSelectorType",
+          "type": "client_selector_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'all'"
+        },
+        "clientSelectorValue": {
+          "name": "clientSelectorValue",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "rate_limit_rules_name_unique": {
+          "name": "rate_limit_rules_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.client_selector_type": {
+      "name": "client_selector_type",
+      "schema": "public",
+      "values": [
+        "api_key",
+        "ip",
+        "all"
+      ]
+    },
+    "public.rule_algorithm": {
+      "name": "rule_algorithm",
+      "schema": "public",
+      "values": [
+        "token_bucket"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

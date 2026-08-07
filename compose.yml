@@ -1,5 +1,4 @@
 name: kaze
-
 services:
   app:
     image: node:24.16.0-alpine
@@ -12,23 +11,22 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-3000}
-      UPSTREAM_BASE_URL: ${UPSTREAM_BASE_URL:-http://host.docker.internal:4000}
-      RULES_REFRESH_MS: ${RULES_REFRESH_MS:-5000}
+      HOST: ${HOST:-0.0.0.0}
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-pass}@postgres:5432/${POSTGRES_DB:-kaze}
+      REDIS_URL: redis://redis:6379
     ports:
       - "${HOST_PORT:-3000}:${PORT:-3000}"
     command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm dev"
     volumes:
       - ./:/app
       - /app/node_modules
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
-
+      redis:
+        condition: service_healthy
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.4-alpine
     container_name: kaze-postgres
     restart: unless-stopped
     environment:
@@ -44,6 +42,19 @@ services:
       retries: 20
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+  redis:
+    image: redis:7.4-alpine
+    container_name: kaze-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - redis_data:/data
 volumes:
   postgres_data:
+  redis_data:

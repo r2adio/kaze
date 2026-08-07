@@ -1,150 +1,69 @@
-import { randomUUID } from "node:crypto";
-import replyFrom from "@fastify/reply-from";
-import Fastify from "fastify";
-import { pool } from "@/db";
-import { redis } from "./redis";
+// core Fastify application instance and its plugins/routes.
+// It's responsible for setting up the application's structure, middleware,
+// and business logic, but not starting the HTTP server itself.
+// Exports a function that registers plugins and sets up application-level configurations.
+// This separation makes the app instance highly testable without a running server.
 
-type AppOptions = {
-	upstreamBaseUrl: string;
-	logger?: boolean;
-};
+import path from "node:path";
+import fastifyAutoload from "@fastify/autoload";
+import fastifyRateLimit from "@fastify/rate-limit";
+import type { FastifyError, FastifyInstance, FastifyPluginOptions } from "fastify";
 
-export function buildServer({ upstreamBaseUrl, logger = true }: AppOptions) {
-	const fastify = Fastify({
-		logger,
-		genReqId: () => randomUUID(),
+import env from "./env.ts";
+
+export default async function serviceApp(fastify: FastifyInstance, opts: FastifyPluginOptions) {
+	fastify.decorate("env", env);
+	await fastify.register(fastifyRateLimit, {
+		// options for rate limiting, can be adjusted as needed
+		max: 100, // max requests per window
+		timeWindow: "1 minute",
+	});
+	await fastify.register(fastifyAutoload, {
+		dir: path.join(import.meta.dirname, "plugins/external"),
+		options: {},
 	});
 
-	fastify.get("/health", async (_request, reply) => {
-		const checks = await Promise.allSettled([
-			(async () => {
-				const start = performance.now();
-
-				await pool.query("SELECT 1");
-
-				return {
-					status: "UP",
-					latencyMs: Math.round(performance.now() - start),
-				};
-			})(),
-
-			(async () => {
-				const start = performance.now();
-
-				await redis.ping();
-
-				return {
-					status: "UP",
-					latencyMs: Math.round(performance.now() - start),
-				};
-			})(),
-		]);
-
-		const [dbCheck, redisCheck] = checks;
-
-		const database =
-			dbCheck.status === "fulfilled"
-				? {
-						status: "UP",
-						details: {
-							database: "PostgreSQL",
-							latencyMs: dbCheck.value.latencyMs,
-						},
-					}
-				: {
-						status: "DOWN",
-						details: {
-							database: "PostgreSQL",
-							error:
-								dbCheck.reason instanceof Error
-									? dbCheck.reason.message
-									: String(dbCheck.reason),
-						},
-					};
-
-		const cache =
-			redisCheck.status === "fulfilled"
-				? {
-						status: "UP",
-						details: {
-							cache: "Redis",
-							latencyMs: redisCheck.value.latencyMs,
-						},
-					}
-				: {
-						status: "DOWN",
-						details: {
-							cache: "Redis",
-							error:
-								redisCheck.reason instanceof Error
-									? redisCheck.reason.message
-									: String(redisCheck.reason),
-						},
-					};
-
-		const isReady = database.status === "UP" && cache.status === "UP";
-
-		reply.code(isReady ? 200 : 503);
-
-		return {
-			status: isReady ? "UP" : "DOWN",
-			components: {
-				database,
-				cache,
-			},
-		};
+	fastify.register(fastifyAutoload, {
+		dir: path.join(import.meta.dirname, "plugins/app"),
+		options: { ...opts },
 	});
 
-	fastify.get("/info", async () => {
-		return {
-			status: "running",
-			environment: process.env.NODE_ENV ?? "development",
-			version: process.env.npm_package_version || "0.1.0",
-			uptime: process.uptime(),
-			system: {
-				cpuTime: process.cpuUsage(),
-				memoryUsage: process.memoryUsage(),
-			},
-		};
+	fastify.register(fastifyAutoload, {
+		dir: path.join(import.meta.dirname, "routes"),
+		autoHooks: true,
+		cascadeHooks: true,
+		options: { ...opts },
 	});
 
-	fastify.get("/", async () => {
-		return {
-			message: "Kaze",
-			description: "Distributed Rate Limiter",
-			version: process.env.npm_package_version,
-			documentation: "https://github.com/r2adio/kaze",
-		};
+	fastify.setErrorHandler((err: FastifyError, req, res) => {
+		fastify.log.error(
+			{ err, req: { method: req.method, url: req.url, query: req.query, params: req.params } },
+			"Unhandled error occurred",
+		);
+
+		res.code(err.statusCode ?? 500);
+
+		let message = "Internal Server Error";
+		if (err.statusCode && err.statusCode < 500) message = err.message;
+
+		return { message };
 	});
 
-	fastify.addHook("onSend", async (request, reply) => {
-		if (!reply.getHeader("x-request-id")) {
-			reply.header("x-request-id", request.id);
-		}
-	});
+	fastify.setNotFoundHandler(
+		{ preHandler: fastify.rateLimit({ max: 3, timeWindow: 500 }) },
+		(req, res) => {
+			req.log.warn(
+				{ req: { method: req.method, url: req.url, query: req.query, params: req.params } },
+				"Resource not found",
+			);
+			res.code(404);
+			return { message: "Not found" };
+		},
+	);
+}
 
-	fastify.addHook("onRequest", async (request) => {
-		if (!request.headers["x-request-id"]) {
-			request.headers["x-request-id"] = request.id;
-		}
-	});
-
-	fastify.register(replyFrom, {
-		base: upstreamBaseUrl,
-	});
-
-	fastify.setNotFoundHandler(async (request, reply) => {
-		const headers = {
-			...request.headers,
-			"x-request-id": request.headers["x-request-id"],
-		};
-		reply.headers(headers);
-
-		return reply.from(request.url, {
-			body: request.body,
-			method: request.method,
-		});
-	});
-
-	return fastify;
+declare module "fastify" {
+	interface FastifyInstance {
+		env: typeof env;
+	}
 }
