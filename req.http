@@ -1,0 +1,11 @@
+### livez
+
+GET localhost:3000/livez HTTP/1.1
+
+### readyz
+
+GET localhost:3000/readyz HTTP/1.1
+
+### healthz
+
+GET localhost:3000/healthz HTTP/1.1
