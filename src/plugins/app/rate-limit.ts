@@ -37,8 +37,11 @@ async function rateLimitPlugin(fastify: FastifyInstance) {
 			rule.refillRatePerSec,
 		);
 
+		const resetAfterSec = Math.ceil((rule.capacity - result.remaining) / rule.refillRatePerSec);
+
 		reply.header("X-RateLimit-Limit", rule.capacity);
 		reply.header("X-RateLimit-Remaining", result.remaining);
+		reply.header("X-RateLimit-Reset", Math.ceil(Date.now() / 1000) + resetAfterSec);
 
 		if (!result.allowed) {
 			reply.header("Retry-After", Math.ceil(result.retryAfterMs / 1000));

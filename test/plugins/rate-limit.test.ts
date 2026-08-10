@@ -78,6 +78,7 @@ test("denies with 429 once the bucket is exhausted", async () => {
 	assert.deepEqual(res.json(), { message: "Rate limit exceeded" });
 	assert.equal(res.headers["x-ratelimit-remaining"], "0");
 	assert.ok(Number(res.headers["retry-after"]) >= 1);
+	assert.ok(Number(res.headers["x-ratelimit-reset"]) > Math.floor(Date.now() / 1000));
 });
 
 test("clients have independent buckets", async () => {
