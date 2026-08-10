@@ -18,6 +18,9 @@ const envSchema = z.object({
 
 	DATABASE_URL: z.string().min(1),
 	REDIS_URL: z.url().default("redis://localhost:6379"),
+
+	// bearer token required for admin endpoints (control plane)
+	ADMIN_API_KEY: z.string().min(1),
 });
 
 export type env = z.infer<typeof envSchema>;
