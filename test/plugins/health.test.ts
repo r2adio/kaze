@@ -20,11 +20,17 @@ test("livez always reports UP", async () => {
 	assert.deepEqual(res.json(), { status: "UP" });
 });
 
-test("readyz reports UP when db and redis respond", async () => {
+test("readyz reports UP when db, redis and rule cache respond", async () => {
 	const res = await app.inject({ method: "GET", url: "/readyz" });
+	const body = res.json() as {
+		status: "UP" | "DOWN";
+		cache: { ready: boolean; ruleCount: number };
+	};
 
 	assert.equal(res.statusCode, 200);
-	assert.deepEqual(res.json(), { status: "UP" });
+	assert.equal(body.status, "UP");
+	assert.equal(body.cache.ready, true);
+	assert.ok(body.cache.ruleCount >= 0);
 });
 
 test("healthz reports component statuses", async () => {
@@ -34,6 +40,7 @@ test("healthz reports component statuses", async () => {
 		components: {
 			database: { status: "UP" | "DOWN"; latencyMs?: number };
 			redis: { status: "UP" | "DOWN"; latencyMs?: number };
+			cache: { status: "UP" | "DOWN"; ruleCount: number };
 		};
 	};
 
@@ -41,6 +48,8 @@ test("healthz reports component statuses", async () => {
 	assert.equal(body.status, "UP");
 	assert.equal(body.components.database.status, "UP");
 	assert.equal(body.components.redis.status, "UP");
+	assert.equal(body.components.cache.status, "UP");
+	assert.ok(body.components.cache.ruleCount >= 0);
 });
 
 test("unknown route returns 404", async () => {

@@ -30,9 +30,11 @@ after(async () => {
 
 test("readyz returns 503 DOWN when dependencies are unreachable", async () => {
 	const res = await app.inject({ method: "GET", url: "/readyz" });
+	const body = res.json() as { status: "UP" | "DOWN"; cache: unknown };
 
 	assert.equal(res.statusCode, 503);
-	assert.deepEqual(res.json(), { status: "DOWN" });
+	assert.equal(body.status, "DOWN");
+	assert.equal(body.cache, null);
 });
 
 test("healthz reports DOWN components when dependencies are unreachable", async () => {
@@ -42,6 +44,7 @@ test("healthz reports DOWN components when dependencies are unreachable", async 
 		components: {
 			database: { status: "UP" | "DOWN"; latencyMs?: number };
 			redis: { status: "UP" | "DOWN"; latencyMs?: number };
+			cache: { status: "UP" | "DOWN"; ruleCount: number };
 		};
 	};
 
@@ -49,6 +52,7 @@ test("healthz reports DOWN components when dependencies are unreachable", async 
 	assert.equal(body.status, "DOWN");
 	assert.equal(body.components.database.status, "DOWN");
 	assert.equal(body.components.redis.status, "DOWN");
+	assert.equal(body.components.cache.status, "DOWN");
 	assert.equal("latencyMs" in body.components.database, false);
 	assert.equal("latencyMs" in body.components.redis, false);
 });

@@ -10,6 +10,8 @@ import { consumeToken } from "../../infrastructure/redis/token-bucket.ts";
 async function rateLimitPlugin(fastify: FastifyInstance) {
 	const cache = new RuleCache(env.RULES_REFRESH_MS, fastify.log);
 
+	fastify.decorate("ruleCache", cache);
+
 	fastify.addHook("onReady", async () => {
 		await cache.refresh();
 		cache.start();
@@ -45,6 +47,12 @@ async function rateLimitPlugin(fastify: FastifyInstance) {
 			return reply;
 		}
 	});
+}
+
+declare module "fastify" {
+	interface FastifyInstance {
+		ruleCache: RuleCache;
+	}
 }
 
 export default fp(rateLimitPlugin);
